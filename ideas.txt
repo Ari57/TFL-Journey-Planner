@@ -1,0 +1,10 @@
+1. journey planner:
+
+• Get starting and destination lostcations from user
+• Return a list of all stop points with the location in their name
+• Ask user to pick a starting/destination stop out of that list
+• Those two stops will be used to return the journey steps
+• Return the journey steps via trains
+
+2. display the status of the relevant trains
+3. show route on google maps - Use the starting/destination stop out of the list
