@@ -22,5 +22,6 @@ Choose one of the destination locations given to you:
 
 You'll get a list of the journey steps returned to you:
 
-![image](https://user-images.githubusercontent.com/74159135/188291560-033ac3e4-c17e-4567-92ed-1dd7ac46f5a8.png)
+![image](https://user-images.githubusercontent.com/74159135/188333149-c25611e6-1b2a-4345-b6c7-47161a10a974.png)
+
 
