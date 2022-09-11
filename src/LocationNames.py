@@ -1,9 +1,8 @@
 import requests
-from secret.keys import pk, sk
 import sys
+from secret.keys import pk, sk
 
 # this takes the starting/destination location from the user
-# and returns a list of all stop points matching the location
 
 fromLocation = sys.argv[1]
 toLocation = sys.argv[2]
@@ -21,9 +20,16 @@ for i in range(0,71):
     try:
         fromResponse = responseJson["fromLocationDisambiguation"]["disambiguationOptions"][i]["place"]["commonName"]
         ToResponse = responseJson["toLocationDisambiguation"]["disambiguationOptions"][i]["place"]["commonName"]
+    except KeyError:
+        print("Unable to find results under the start/destination location")
+        sys.exit(1)
+    
+    try:
         FromArray.append(fromResponse)
         ToArray.append(ToResponse)
     except IndexError:
         pass
 
-# TODO: find the length of whatever [0] is, iterate over it, pick up all stop names, display stop names, allow user to pick one, convert that to ICS code
+if __name__ == "__main__":
+    pass
+
