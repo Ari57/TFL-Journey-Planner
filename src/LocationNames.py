@@ -27,14 +27,9 @@ def getLocationNames(fromLocation, toLocation):
     
     for i in range(0,71):
         try:
-            if responseJson["fromLocationDisambiguation"]["disambiguationOptions"][i]["place"]["placeType"] == "StopPoint":
-                fromResponse = responseJson["fromLocationDisambiguation"]["disambiguationOptions"][i]["place"]["commonName"]
-                ToResponse = responseJson["toLocationDisambiguation"]["disambiguationOptions"][i]["place"]["commonName"]
-                FromArray.append(fromResponse)
-                ToArray.append(ToResponse)
+            fromResponse = responseJson["fromLocationDisambiguation"]["disambiguationOptions"][i]["place"]["commonName"]
+            ToResponse = responseJson["toLocationDisambiguation"]["disambiguationOptions"][i]["place"]["commonName"]
+            FromArray.append(fromResponse)
+            ToArray.append(ToResponse)
         except IndexError:
             break
-    print(FromArray)
-    print(ToArray)
-
-getLocationNames("goodmayes", "canary wharf")
