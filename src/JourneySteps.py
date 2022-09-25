@@ -6,8 +6,7 @@ import sys
 # https://stackoverflow.com/questions/50405112/how-to-deal-with-the-slash-and-2f-in-python
 
 def startingLocation():
-    print(" ")
-    print("Starting Locations:")
+    print("Starting Locations:\n")
     for i in range(0,len(FromArray)):
         print(FromArray[i])
     print(" ")
@@ -19,8 +18,7 @@ def startingLocation():
     return FromInput
 
 def destinationLocation():
-    print(" ")
-    print("Destination Locations:")
+    print("Destination Locations:\n")
     for i in range(0,len(ToArray)):
         print(ToArray[i])
     print(" ")
@@ -33,7 +31,6 @@ def generateURL(FromInput, ToInput):
         print("The starting location cannot be the same as the destination")
         sys.exit(1)
         
-
     for i in range(0,len(FromArray)):
         if FromInput == FromArray[i]:
             break
@@ -51,9 +48,9 @@ def generateURL(FromInput, ToInput):
         
 def LocationChecking(response):
     responseJson = response.json()
-
+   
     # sometimes, one of the locations a user picks, has multiple locations
-    # https://api.tfl.gov.uk/journey/journeyresults/Barking and Dagenham, Chelmer Wines, Barking/to/Ealing, Greengate?app_id&app_key
+    # https://api.tfl.gov.uk/journey/journeyresults/Barking and Dagenham, Chelmer Wines, Barking/to/Ealing, Greengate
     # above is a valid request, but it returns results similar to LocationNames.py file
 
     # if this key exists, then the wrong results have been returned
@@ -95,11 +92,38 @@ def LocationChecking(response):
             sys.exit(1)
     except KeyError:
         pass
+    
+    return response
+
+    responseJson = response.json()
+    MyArray = []
+
+    for i in range(0,10):
+        for j in range(0,10):
+            try:
+                result = responseJson["journeys"][i]["legs"][j]["routeOptions"][0]["lineIdentifier"]["id"]
+                if result in MyArray: # it's possible to get duplicates of the lines
+                    pass
+                else:
+                    MyArray.append(result)
+            except (IndexError, KeyError) as error:
+                pass
+
+    print(" ")
+    for trainLine in MyArray:
+        urlStatus = "https://api.tfl.gov.uk/Line/"+trainLine+"/Status?detail=true&app_id="+pk+"&app_key="+sk
+        statusResponse = requests.get(urlStatus)
+        statusResponseJson = statusResponse.json()
+        print(statusResponseJson[0]["name"])
+        print(statusResponseJson[0]["lineStatuses"][0]["statusSeverityDescription"])
+        print(" ")
+
+    # for loop, go through array, make a request each time and print status
+            
+    return response
 
 def receiveResults(response):
     responseJson = response.json()
-    
-    
     for i in range(0,10):
         try:
             selectedRoute = responseJson["journeys"][i]["legs"]
@@ -122,11 +146,50 @@ def receiveResults(response):
         except IndexError:
             break    
 
+        return response
+        
+def TrainStatus(response):
+    responseJson = response.json()
+    lineArray = []
+
+    for i in range(0,10):
+        for j in range(0,10):
+            try:
+                result = responseJson["journeys"][i]["legs"][j]["routeOptions"][0]["lineIdentifier"]["id"]
+                if result in lineArray: # it's possible to get duplicates of the lines
+                    pass
+                else:
+                    lineArray.append(result)
+            except (IndexError, KeyError) as error:
+                pass
+
+    print(" ")
+    # for loop, go through array, make a request each time and print status 
+    for trainLine in lineArray:
+        urlStatus = "https://api.tfl.gov.uk/Line/"+trainLine+"/Status?detail=true&app_id="+pk+"&app_key="+sk
+        statusResponse = requests.get(urlStatus)
+        statusResponseJson = statusResponse.json()
+        lineName = statusResponseJson[0]["name"]
+        lineStatus = statusResponseJson[0]["lineStatuses"][0]["statusSeverityDescription"]
+        try:
+            reason = statusResponseJson[0]["lineStatuses"][0]["reason"]
+        except KeyError:
+            reason = "" # need to reset "reason", otherwise anything without the "reason" key, will use the last value that "reason" was set to
+            pass
+        if reason:
+            print(lineName, "-", lineStatus, "-", reason)
+        else:
+            print(lineName, "-", lineStatus)
+        print(" ")
+
 if __name__ == "__main__":
     try:
         getLocationNames(sys.argv[1], sys.argv[2])
     except KeyError:
         print("Incorrect location names given")
         sys.exit(1)
+
+        # as the get request will pull anything that has the sys.argv arguments in it
+        # we only need to take a single word from the user
     
-    receiveResults(LocationChecking(generateURL(startingLocation(), destinationLocation(),)))
+    TrainStatus(receiveResults(LocationChecking(generateURL(startingLocation(), destinationLocation()))))

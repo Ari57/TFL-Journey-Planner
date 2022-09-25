@@ -6,7 +6,7 @@ FromArray = []
 ToArray = []
 
 def getLocationNames(fromLocation, toLocation):
-    FromArray.clear()
+    FromArray.clear() # if the function is called more than once (at the same time), we need to reset the array
     ToArray.clear()
     
     # if the user tries to pass in a int (for example), it can't concat to a string
