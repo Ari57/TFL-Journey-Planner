@@ -95,33 +95,6 @@ def LocationChecking(response):
     
     return response
 
-    responseJson = response.json()
-    MyArray = []
-
-    for i in range(0,10):
-        for j in range(0,10):
-            try:
-                result = responseJson["journeys"][i]["legs"][j]["routeOptions"][0]["lineIdentifier"]["id"]
-                if result in MyArray: # it's possible to get duplicates of the lines
-                    pass
-                else:
-                    MyArray.append(result)
-            except (IndexError, KeyError) as error:
-                pass
-
-    print(" ")
-    for trainLine in MyArray:
-        urlStatus = "https://api.tfl.gov.uk/Line/"+trainLine+"/Status?detail=true&app_id="+pk+"&app_key="+sk
-        statusResponse = requests.get(urlStatus)
-        statusResponseJson = statusResponse.json()
-        print(statusResponseJson[0]["name"])
-        print(statusResponseJson[0]["lineStatuses"][0]["statusSeverityDescription"])
-        print(" ")
-
-    # for loop, go through array, make a request each time and print status
-            
-    return response
-
 def receiveResults(response):
     responseJson = response.json()
     for i in range(0,10):
@@ -189,7 +162,7 @@ if __name__ == "__main__":
         print("Incorrect location names given")
         sys.exit(1)
 
-        # as the get request will pull anything that has the sys.argv arguments in it
-        # we only need to take a single word from the user
+        # use double quotes to search for multi word locations
+        # e.g. "North Greenwich"
     
     TrainStatus(receiveResults(LocationChecking(generateURL(startingLocation(), destinationLocation()))))

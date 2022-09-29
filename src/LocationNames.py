@@ -33,3 +33,4 @@ def getLocationNames(fromLocation, toLocation):
             ToArray.append(ToResponse)
         except IndexError:
             break
+
