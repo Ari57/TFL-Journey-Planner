@@ -34,3 +34,5 @@ def getLocationNames(fromLocation, toLocation):
         except IndexError:
             break
 
+    return response
+

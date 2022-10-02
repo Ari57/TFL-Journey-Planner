@@ -5,6 +5,8 @@ import sys
 
 # https://stackoverflow.com/questions/50405112/how-to-deal-with-the-slash-and-2f-in-python
 
+# CTRL K, CTRL 0 to collapse everything
+
 def startingLocation():
     print("Starting Locations:\n")
     for i in range(0,len(FromArray)):

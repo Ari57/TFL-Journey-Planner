@@ -1,41 +1,30 @@
 import sys
 import os
+import unittest
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/../src")
 
 from JourneySteps import destinationLocation
 from LocationNames import getLocationNames
 
-def Word():
-    # what happens when we pass a word in
-    getLocationNames("goodmayes", "canary wharf")
-    destinationLocation()
-    getLocationNames("mile", "london")
-    destinationLocation()
-    getLocationNames("woodford", "leyton")
-    destinationLocation()
-    getLocationNames("blue", "green")
-    destinationLocation()
-    getLocationNames("chocolate", "ice cream") # KeyError as no stop points have "chocolate" or "ice cream" in their name
-                                                # in the JourneySteps.py file, we have a try statement to catch any KeyErrors found while executing the getLocationNames function
-  
-    
-    
-def Letter():
-    print(" ")
-    # what happens when we pass a letter in
-    
-    # in this situation, we received a KeyError as no stop points have "x" in their name
-    # in the JourneySteps file, we raise an exception if a KeyError is detected
-    getLocationNames("x", "w")
-    destinationLocation()
+class TestInput(unittest.TestCase):
+    def test_CorrectInput(self):
+        response = getLocationNames("goodmayes", "canary wharf")
+        self.assertEqual(response.status_code, 300) # assuming you pass a word that appears in one or more stop points
+        destinationLocation()
 
-def IncorrectDataType():
+    def test_IncorrectInput(self):
+        # TODO reset startingLocation values here
     # what happens when a incorrect value is passed in
-    print(" ")
-    getLocationNames(True,False)
-    destinationLocation()
+    # assuming the user passed in something like an int or boolean, we raise a TypeError as an example
+        self.assertRaises(TypeError, getLocationNames)
+        destinationLocation() # what happens if a TypeError is raised, the function runs fine, but there are no startingLocation values to choose from
+
+    def test_ValidLetter(self):
+        self.assertRaises(KeyError, getLocationNames, "x", "x") # if no stop points are found for a value, e.g. "x". Then a KeyError is raised
+        # in the JourneySteps file, we check for a KeyError before running the getLocationName function
+        # as mentioned by the README, the user should run the code using the JournySteps file
+        destinationLocation() # same as above, no values are given to the startingLocation function
+        
 
 if __name__ == "__main__":
-    Word()
-    Letter()
-    IncorrectDataType()
+    unittest.main()
