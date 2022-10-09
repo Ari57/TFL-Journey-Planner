@@ -1,32 +1,38 @@
 from LocationNames import getLocationNames, FromArray, ToArray
 from secret.keys import pk, sk
+from secret.dbdetails import conn
 import requests
 import sys
+import psycopg2
 
 # https://stackoverflow.com/questions/50405112/how-to-deal-with-the-slash-and-2f-in-python
 
 # CTRL K, CTRL 0 to collapse everything
 
+
+
 def startingLocation():
-    print("Starting Locations:\n")
-    for i in range(0,len(FromArray)):
-        print(FromArray[i])
-    print(" ")
-    FromInput = input("Please enter the name of your chosen starting location exactly as shown above: ")
+    if FromArray:
+        print("Starting Locations:\n")
+        for i in range(0,len(FromArray)):
+            print(FromArray[i])
+        print(" ")
+        FromInput = input("Please enter the name of your chosen starting location exactly as shown above: ")
     # while FromInput == "Goodmayes, Barley Lane / Goodmayes Stn":
     #     FromInput = input("There's currently an issue with that location name, please select another: ")
     # else:
-    print("Chosen location: " + FromInput)
-    return FromInput
+        print("Chosen location: " + FromInput)
+        return FromInput
 
 def destinationLocation():
-    print("Destination Locations:\n")
-    for i in range(0,len(ToArray)):
-        print(ToArray[i])
-    print(" ")
-    ToInput = input("Please enter the name of your chosen destination location exactly as shown above: ")
-    print("Chosen destination: " + ToInput)
-    return ToInput
+    if ToArray:
+        print("Destination Locations:\n")
+        for i in range(0,len(ToArray)):
+            print(ToArray[i])
+        print(" ")
+        ToInput = input("Please enter the name of your chosen destination location exactly as shown above: ")
+        print("Chosen destination: " + ToInput)
+        return ToInput
 
 def generateURL(FromInput, ToInput):
     if FromInput == ToInput:
@@ -40,14 +46,18 @@ def generateURL(FromInput, ToInput):
     for i in range(0,len(ToArray)):
             if ToInput == ToArray[i]:
                 url = "https://api.tfl.gov.uk/journey/journeyresults/"+FromInput+"/to/"+ToInput+"?app_id="+pk+"&app_key="+sk # enter your own keys in a seperate file and import them here
+                cursor = conn.cursor()
+                cursor.execute("INSERT INTO journeylocations (start, dest) VALUES(%s, %s)", (FromInput, ToInput)) # need some form of protection here
+                 
+                
                 break
     try:
-        response = requests.get(url)
+        response = requests.get(url) # type: ignore | raises a "reportUnboundVariable" problem, (as it should)
         return response
     except NameError:
             print("One or both of your location names were incorrect")
             sys.exit(1)
-        
+
 def LocationChecking(response):
     responseJson = response.json()
    
@@ -157,6 +167,20 @@ def TrainStatus(response):
             print(lineName, "-", lineStatus)
         print(" ")
 
+def GoogleMaps():
+    cursor = conn.cursor()
+    cursor.execute("SELECT * from journeylocations;")
+    record = cursor.fetchall()
+    for row in record:
+        start = row[0]
+        dest = row[1]
+    print("Starting: "  + start) # type: ignore | it thinks it's unbound, it's not
+    print("Destination: " + dest) # type: ignore
+    cursor.execute("delete from journeylocations;") #  can delete once we've printed it, for now
+    conn.close()
+
+    
+   
 if __name__ == "__main__":
     try:
         getLocationNames(sys.argv[1], sys.argv[2])
@@ -168,3 +192,4 @@ if __name__ == "__main__":
         # e.g. "North Greenwich"
     
     TrainStatus(receiveResults(LocationChecking(generateURL(startingLocation(), destinationLocation()))))
+    GoogleMaps()
