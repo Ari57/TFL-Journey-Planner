@@ -6,7 +6,7 @@ from LocationNames import getLocationNames
 
 class TestInput(unittest.TestCase):
     def test_ValidInput(self):
-        response = getLocationNames("barking", "shenfield")
+        response = getLocationNames("barking", "canary wharf")
         self.assertEqual(response.status_code, 300)
         response = getLocationNames("bank", "paddington")
         self.assertEqual(response.status_code, 300)

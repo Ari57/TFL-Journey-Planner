@@ -1,15 +1,12 @@
 from LocationNames import getLocationNames, FromArray, ToArray
-from secret.keys import pk, sk
+from secret.keys import pk, sk, googlekey
 from secret.dbdetails import conn
-import requests
-import sys
-import psycopg2
+import requests, sys, psycopg2, googlemaps
+from datetime import datetime
 
 # https://stackoverflow.com/questions/50405112/how-to-deal-with-the-slash-and-2f-in-python
 
 # CTRL K, CTRL 0 to collapse everything
-
-
 
 def startingLocation():
     if FromArray:
@@ -17,7 +14,20 @@ def startingLocation():
         for i in range(0,len(FromArray)):
             print(FromArray[i])
         print(" ")
+        
+    FromFlag = False
+    
+    while FromFlag == False:
         FromInput = input("Please enter the name of your chosen starting location exactly as shown above: ")
+        for i in range(0,len(FromArray)):
+            if FromInput == FromArray[i]:
+                FromFlag = True
+                break
+        else:
+           print("You did not pick a correct location, please try again")
+           continue
+
+    
     # while FromInput == "Goodmayes, Barley Lane / Goodmayes Stn":
     #     FromInput = input("There's currently an issue with that location name, please select another: ")
     # else:
@@ -30,7 +40,19 @@ def destinationLocation():
         for i in range(0,len(ToArray)):
             print(ToArray[i])
         print(" ")
+        
+    ToFlag = False
+    
+    while ToFlag == False:
         ToInput = input("Please enter the name of your chosen destination location exactly as shown above: ")
+        for i in range(0,len(ToArray)):
+            if ToInput == ToArray[i]:
+                ToFlag = True
+                break
+        else:
+            print("You did not pick a correct location, please try again")
+            continue
+        
         print("Chosen destination: " + ToInput)
         return ToInput
 
@@ -38,19 +60,14 @@ def generateURL(FromInput, ToInput):
     if FromInput == ToInput:
         print("The starting location cannot be the same as the destination")
         sys.exit(1)
-        
-    for i in range(0,len(FromArray)):
-        if FromInput == FromArray[i]:
-            break
+               
 
-    for i in range(0,len(ToArray)):
-            if ToInput == ToArray[i]:
-                url = "https://api.tfl.gov.uk/journey/journeyresults/"+FromInput+"/to/"+ToInput+"?app_id="+pk+"&app_key="+sk # enter your own keys in a seperate file and import them here
-                cursor = conn.cursor()
-                cursor.execute("INSERT INTO journeylocations (start, dest) VALUES(%s, %s)", (FromInput, ToInput)) # need some form of protection here
-                 
+    url = "https://api.tfl.gov.uk/journey/journeyresults/"+FromInput+"/to/"+ToInput+"?app_id="+pk+"&app_key="+sk # enter your own keys in a seperate file and import them here
+    cursor = conn.cursor()
+    cursor.execute("delete from journeylocations;") # if this function runs, but the GoogleMaps function does not, then the data will be inserted, but not deleted
+    cursor.execute("INSERT INTO journeylocations (start, dest) VALUES(%s, %s)", (FromInput, ToInput)) # need some form of protection here
                 
-                break
+                
     try:
         response = requests.get(url) # type: ignore | raises a "reportUnboundVariable" problem, (as it should)
         return response
@@ -112,6 +129,7 @@ def receiveResults(response):
     for i in range(0,10):
         try:
             selectedRoute = responseJson["journeys"][i]["legs"]
+            
             startTime = responseJson["journeys"][i]["startDateTime"]
             startPosition = startTime.find("T") + 1
             startResult = startTime[startPosition:]
@@ -172,15 +190,20 @@ def GoogleMaps():
     cursor.execute("SELECT * from journeylocations;")
     record = cursor.fetchall()
     for row in record:
-        start = row[0]
+        start = row[0] 
         dest = row[1]
     print("Starting: "  + start) # type: ignore | it thinks it's unbound, it's not
     print("Destination: " + dest) # type: ignore
     cursor.execute("delete from journeylocations;") #  can delete once we've printed it, for now
     conn.close()
 
-    
-   
+    gmaps = googlemaps.Client(key=googlekey)
+
+    now = datetime.now()
+    directions_result = gmaps.directions(row[0], row[1], mode="transit", departure_time=now) # type: ignore
+ 
+
+
 if __name__ == "__main__":
     try:
         getLocationNames(sys.argv[1], sys.argv[2])
