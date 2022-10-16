@@ -10,18 +10,18 @@ To start using this, get an api and app key from https://api-portal.tfl.gov.uk/s
 
 Open the command line and run the JourneySteps.py file, enter your start and destination locations, for example:
 
-![image](https://user-images.githubusercontent.com/74159135/188290706-6b47c319-7a40-4f73-a64b-32b057f6f040.png)
+![image](https://user-images.githubusercontent.com/74159135/196012086-87bb949d-211a-4ad5-becc-5d31bbf0b6c3.png)
 
 Choose one of the starting locations given to you:
 
-![image](https://user-images.githubusercontent.com/74159135/188290806-7801c522-4efa-499c-85d5-91838f6d8e8e.png)
+![image](https://user-images.githubusercontent.com/74159135/196012100-dc8e2032-c969-4d9d-8fc9-5c75e2501f4b.png)
 
 Choose one of the destination locations given to you:
 
-![image](https://user-images.githubusercontent.com/74159135/188290823-17d176b4-7055-4170-b5c0-533e7d849c6e.png)
+![image](https://user-images.githubusercontent.com/74159135/196012142-27d13c09-496c-4fbd-a2fd-759675618b0d.png)
 
-You'll get a list of the journey steps returned to you:
+You'll get a list of the journey steps returned to you, as well as the status of the relevant transport options:
 
-![image](https://user-images.githubusercontent.com/74159135/188333149-c25611e6-1b2a-4345-b6c7-47161a10a974.png)
+![image](https://user-images.githubusercontent.com/74159135/196012151-bbd9d733-580d-44df-b192-c356db66fad0.png)
 
 
