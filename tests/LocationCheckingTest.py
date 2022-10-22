@@ -10,12 +10,13 @@ from LocationNames import getLocationNames, FromArray, ToArray
 
 class TestInput(unittest.TestCase):
     def test_CorrectInput(self):
-        getLocationNames("goodmayes", "romford")
+        getLocationNames("goodmayes", "canary")
+        # TODO pick random location in array
         # test to see if we get a 200/300 (multiple choices) response when entering correct input values
         FromInput = "Goodmayes, Goodmayes Station"
-        ToInput = "Romford (London), Romford Station"
+        ToInput = "Canary Wharf, Canary Wharf DLR Station"
         response = LocationChecking(generateURL(FromInput, ToInput))
-        self.assertEqual(response.status_code, 300) # assuming you pass a word that appears in one or more stop points
+        self.assertEqual(response.status_code, 200) # assuming you pass a word that appears in one or more stop points
         
 # def multipleLocations():
 #     # what happens when we pass in a value that has multiple locations
@@ -32,4 +33,4 @@ class TestInput(unittest.TestCase):
     # the function has nothing to do, so it would just pass on to the receiveResults function, if we called it here
 
 if __name__ == "__main__":
-    unittest.main(exit=False)
+    unittest.main

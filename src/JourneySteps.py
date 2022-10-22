@@ -8,7 +8,7 @@ from datetime import datetime
 
 # CTRL K, CTRL 0 to collapse everything
 
-def startingLocation():
+def startingLocation(startTestIndicator):
     if FromArray:
         print("Starting Locations:\n")
         for i in range(0,len(FromArray)):
@@ -18,23 +18,23 @@ def startingLocation():
     FromFlag = False
     
     while FromFlag == False:
+        if startTestIndicator == "test":
+            break
         FromInput = input("Please enter the name of your chosen starting location exactly as shown above: ")
         for i in range(0,len(FromArray)):
             if FromInput == FromArray[i]:
-                FromFlag = True
                 break
         else:
            print("You did not pick a correct location, please try again")
            continue
 
-    
     # while FromInput == "Goodmayes, Barley Lane / Goodmayes Stn":
     #     FromInput = input("There's currently an issue with that location name, please select another: ")
     # else:
         print("Chosen location: " + FromInput)
         return FromInput
 
-def destinationLocation():
+def destinationLocation(fromTestIndicator):
     if ToArray:
         print("Destination Locations:\n")
         for i in range(0,len(ToArray)):
@@ -44,10 +44,11 @@ def destinationLocation():
     ToFlag = False
     
     while ToFlag == False:
+        if fromTestIndicator == "test":
+            break
         ToInput = input("Please enter the name of your chosen destination location exactly as shown above: ")
         for i in range(0,len(ToArray)):
             if ToInput == ToArray[i]:
-                ToFlag = True
                 break
         else:
             print("You did not pick a correct location, please try again")
@@ -129,6 +130,7 @@ def receiveResults(response):
     for i in range(0,10):
         try:
             selectedRoute = responseJson["journeys"][i]["legs"]
+            duration = responseJson["journeys"][i]["duration"]
             
             startTime = responseJson["journeys"][i]["startDateTime"]
             startPosition = startTime.find("T") + 1
@@ -138,10 +140,11 @@ def receiveResults(response):
             arrivalPosition = arrivalTime.find("T") + 1
             arrivalResult = arrivalTime[arrivalPosition:]
             
-            print("-----------------")
+            print("---------------------------")
             print("Starting time: " + startResult)
             print("Arrival time: " + arrivalResult)
-            print("-----------------")
+            print("Duration: " + str(duration) + " minutes")
+            print("---------------------------")
             for detail in selectedRoute:
                 print("From", detail["departurePoint"]["commonName"])
                 print(detail["instruction"]["detailed"])
@@ -192,8 +195,8 @@ def GoogleMaps():
     for row in record:
         start = row[0] 
         dest = row[1]
-    print("Starting: "  + start) # type: ignore | it thinks it's unbound, it's not
-    print("Destination: " + dest) # type: ignore
+    # print("Starting: "  + start) # type: ignore | it thinks it's unbound, it's not
+    # print("Destination: " + dest) # type: ignore
     cursor.execute("delete from journeylocations;") #  can delete once we've printed it, for now
     conn.close()
 
@@ -202,17 +205,16 @@ def GoogleMaps():
     now = datetime.now()
     directions_result = gmaps.directions(row[0], row[1], mode="transit", departure_time=now) # type: ignore
  
-
-
 if __name__ == "__main__":
+    conn.close()
     try:
         getLocationNames(sys.argv[1], sys.argv[2])
     except KeyError:
         print("Incorrect location names given")
         sys.exit(1)
-
         # use double quotes to search for multi word locations
         # e.g. "North Greenwich"
     
-    TrainStatus(receiveResults(LocationChecking(generateURL(startingLocation(), destinationLocation()))))
-    GoogleMaps()
+    TrainStatus(receiveResults(LocationChecking(generateURL(startingLocation(""), destinationLocation("")))))
+    #GoogleMaps()
+

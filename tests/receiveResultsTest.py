@@ -11,8 +11,8 @@ from secret.keys import pk, sk
 
 class TestInput(unittest.TestCase):
     def test_ValidInput(self):
-        getLocationNames("goodmayes", "canary")
-        for x in range(0,5):
+        getLocationNames("goodmayes", "canary wharf")
+        for x in range(0,2):
             i = random.randint(0,len(FromArray)) - 1
             j = random.randint(0,len(ToArray)) - 1
             FromInput = FromArray[i]
