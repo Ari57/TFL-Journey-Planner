@@ -1,8 +1,12 @@
+import requests, sys, psycopg2, googlemaps
+import time
 from LocationNames import getLocationNames, FromArray, ToArray
 from secret.keys import pk, sk, googlekey
-from secret.dbdetails import conn
-import requests, sys, psycopg2, googlemaps
+from secret.dbdetails import conn, connGMaps
 from datetime import datetime
+from rich.console import Console
+
+console = Console() # don't see any reason against making this global
 
 # https://stackoverflow.com/questions/50405112/how-to-deal-with-the-slash-and-2f-in-python
 
@@ -10,7 +14,8 @@ from datetime import datetime
 
 def startingLocation(startTestIndicator):
     if FromArray:
-        print("Starting Locations:\n")
+        console.print("Starting Locations:\n", style="bold bright_blue")
+        
         for i in range(0,len(FromArray)):
             print(FromArray[i])
         print(" ")
@@ -20,23 +25,24 @@ def startingLocation(startTestIndicator):
     while FromFlag == False:
         if startTestIndicator == "test":
             break
-        FromInput = input("Please enter the name of your chosen starting location exactly as shown above: ")
+        FromInput = console.input("[bold bright_blue]Please enter the name of your chosen starting location exactly as shown above: ")
         for i in range(0,len(FromArray)):
             if FromInput == FromArray[i]:
                 break
         else:
-           print("You did not pick a correct location, please try again")
+           console.print("You did not pick a correct location, please try again", style="bold bright_blue")
            continue
 
     # while FromInput == "Goodmayes, Barley Lane / Goodmayes Stn":
     #     FromInput = input("There's currently an issue with that location name, please select another: ")
     # else:
-        print("Chosen location: " + FromInput)
+        console.print("Chosen location: " + FromInput, style="bold bright_blue")
+        time.sleep(1) # give users a second to read their starting choice
         return FromInput
 
 def destinationLocation(fromTestIndicator):
     if ToArray:
-        print("Destination Locations:\n")
+        console.print("Destination Locations:\n", style="light_sea_green")
         for i in range(0,len(ToArray)):
             print(ToArray[i])
         print(" ")
@@ -46,15 +52,16 @@ def destinationLocation(fromTestIndicator):
     while ToFlag == False:
         if fromTestIndicator == "test":
             break
-        ToInput = input("Please enter the name of your chosen destination location exactly as shown above: ")
+        ToInput = console.input("[light_sea_green]Please enter the name of your chosen destination location exactly as shown above: ")
         for i in range(0,len(ToArray)):
             if ToInput == ToArray[i]:
                 break
         else:
-            print("You did not pick a correct location, please try again")
+            console.print("You did not pick a correct location, please try again", style="light_sea_green")
             continue
         
-        print("Chosen destination: " + ToInput)
+        console.print("Chosen destination: " + ToInput, style="light_sea_green")
+        time.sleep(1) # give users a second to read their destination choice
         return ToInput
 
 def generateURL(FromInput, ToInput):
@@ -64,10 +71,15 @@ def generateURL(FromInput, ToInput):
                
 
     url = "https://api.tfl.gov.uk/journey/journeyresults/"+FromInput+"/to/"+ToInput+"?app_id="+pk+"&app_key="+sk # enter your own keys in a seperate file and import them here
-    cursor = conn.cursor()
-    cursor.execute("delete from journeylocations;") # if this function runs, but the GoogleMaps function does not, then the data will be inserted, but not deleted
-    cursor.execute("INSERT INTO journeylocations (start, dest) VALUES(%s, %s)", (FromInput, ToInput)) # need some form of protection here
-                
+    try: 
+        cursor = conn.cursor() 
+        cursor.execute("delete from journeylocations;") # if this function runs, but the GoogleMaps function does not, then the data will be inserted, but not deleted
+        cursor.execute("INSERT INTO journeylocations (start, dest) VALUES(%s, %s)", (FromInput, ToInput)) 
+        conn.commit()
+        cursor.close()
+        conn.close()
+    except psycopg2.InterfaceError:
+        pass
                 
     try:
         response = requests.get(url) # type: ignore | raises a "reportUnboundVariable" problem, (as it should)
@@ -102,6 +114,7 @@ def LocationChecking(response):
             for i in range(0,len(FromArray2)):
                 print(FromArray2[i])
             sys.exit(1)
+            
     except KeyError:
         pass
     
@@ -140,20 +153,20 @@ def receiveResults(response):
             arrivalPosition = arrivalTime.find("T") + 1
             arrivalResult = arrivalTime[arrivalPosition:]
             
-            print("---------------------------")
-            print("Starting time: " + startResult)
-            print("Arrival time: " + arrivalResult)
-            print("Duration: " + str(duration) + " minutes")
-            print("---------------------------")
+            console.print("---------------------------", style="dodger_blue1")
+            console.print("Starting time: " + startResult, style="dodger_blue1")
+            console.print("Arrival time: " + arrivalResult, style="dodger_blue1")
+            console.print("Duration: " + str(duration) + " minutes", style="dodger_blue1")
+            console.print("---------------------------", style="dodger_blue1")
             for detail in selectedRoute:
                 print("From", detail["departurePoint"]["commonName"])
                 print(detail["instruction"]["detailed"])
                 print("Arrive at", detail["arrivalPoint"]["commonName"])
         except IndexError:
             break    
-
+ 
         return response
-        
+  
 def TrainStatus(response):
     responseJson = response.json()
     lineArray = []
@@ -183,22 +196,20 @@ def TrainStatus(response):
             reason = "" # need to reset "reason", otherwise anything without the "reason" key, will use the last value that "reason" was set to
             pass
         if reason:
-            print(lineName, "-", lineStatus, "-", reason)
+            console.print(lineName, "-", lineStatus, "-", reason, style="bold bright_red")
         else:
-            print(lineName, "-", lineStatus)
+            console.print(lineName, "-", lineStatus, style="blue")
         print(" ")
 
 def GoogleMaps():
-    cursor = conn.cursor()
-    cursor.execute("SELECT * from journeylocations;")
+    cursor = connGMaps.cursor()
+    cursor.execute("SELECT start, dest from journeylocations;")
     record = cursor.fetchall()
     for row in record:
-        start = row[0] 
-        dest = row[1]
-    # print("Starting: "  + start) # type: ignore | it thinks it's unbound, it's not
-    # print("Destination: " + dest) # type: ignore
+        print("Starting: "  + row[0]) # type: ignore | it thinks it's unbound, it's not
+        print("Destination: " + row[1]) # type: ignore
     cursor.execute("delete from journeylocations;") #  can delete once we've printed it, for now
-    conn.close()
+    connGMaps.close()
 
     gmaps = googlemaps.Client(key=googlekey)
 
@@ -206,7 +217,6 @@ def GoogleMaps():
     directions_result = gmaps.directions(row[0], row[1], mode="transit", departure_time=now) # type: ignore
  
 if __name__ == "__main__":
-    conn.close()
     try:
         getLocationNames(sys.argv[1], sys.argv[2])
     except KeyError:
@@ -217,4 +227,3 @@ if __name__ == "__main__":
     
     TrainStatus(receiveResults(LocationChecking(generateURL(startingLocation(""), destinationLocation("")))))
     #GoogleMaps()
-

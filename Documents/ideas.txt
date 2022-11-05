@@ -13,7 +13,7 @@
 • Need to figure out how to get all possible train lines, the index of the keys is a bit confusing - done
 • Once we have all the train lines, we just need to list the statuses after all the train results are printed - done
 
-3. show route on google maps - Use the FromInput/ToInput stop out of the list
+Future improvements:
 
-• If needed, build a frontend and have a google maps widget, or open the main page of google maps
+Use ICS code for more specific locations - should cause less errors
 
