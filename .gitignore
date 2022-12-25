@@ -1,0 +1,10 @@
+.idea/
+.vscode/
+tflvenv/
+requirementsInfo.txt
+src/TFLSite
+src/Unused
+**/__pycache__*
+src/secret/
+venv_info.txt
+test/dictResult.py

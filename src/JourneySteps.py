@@ -6,7 +6,6 @@ from rich.console import Console
 
 console = Console()  # don't see any reason against making this global
 
-
 # https://stackoverflow.com/questions/50405112/how-to-deal-with-the-slash-and-2f-in-python
 
 # CTRL K, CTRL 0 to collapse everything
@@ -40,7 +39,6 @@ def startingLocation(startTestIndicator):
         time.sleep(1)  # give users a second to read their starting choice
         return FromInput
 
-
 def destinationLocation(fromTestIndicator):
     if ToArray:
         console.print("Destination Locations:\n", style="light_sea_green")
@@ -65,7 +63,6 @@ def destinationLocation(fromTestIndicator):
         console.print("Chosen destination: " + ToInput, style="light_sea_green")
         time.sleep(1)  # give users a second to read their destination choice
         return ToInput
-
 
 def generateURL(FromInput, ToInput):
     if FromInput == ToInput:
@@ -93,7 +90,6 @@ def generateURL(FromInput, ToInput):
     except NameError:
         print("One or both of your location names were incorrect")
         sys.exit(1)
-
 
 def LocationChecking(response):
     responseJson = response.json()
@@ -180,16 +176,13 @@ def receiveResults(response):
 
 def TrainStatus(response):
     responseJson = response.json()
-    lineArray = []
+    lineArray = set()
 
     for i in range(0, 10):
         for j in range(0, 10):
             try:
                 result = responseJson["journeys"][i]["legs"][j]["routeOptions"][0]["lineIdentifier"]["id"]
-                if result in lineArray:  # it's possible to get duplicates of the lines
-                    pass
-                else:
-                    lineArray.append(result)
+                lineArray.add(result)
             except (IndexError, KeyError):
                 pass
 
@@ -213,9 +206,9 @@ def TrainStatus(response):
             console.print(lineName, "-", lineStatus, style="blue")
         print(" ")
 
-
 if __name__ == "__main__":
     try:
+        # getLocationNames(sys.argv[1], sys.argv[2])
         getLocationNames(sys.argv[1], sys.argv[2])
     except KeyError:
         print("Incorrect location names given")
